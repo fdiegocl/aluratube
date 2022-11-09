@@ -1,3 +1,4 @@
+import React from "react";
 import config from "../config.json";
 import styled from "styled-components";
 import { CSSReset } from "../src/components/CSSReset";
@@ -9,15 +10,16 @@ function HomePage() {
     const estilosDaHomePage = {
 
     };
+    const [valorDoFiltro, setValorDoFiltro] = React.useState("");
 
     return (
         <>
             <CSSReset />
             <div style={estilosDaHomePage}>
-                <Menu></Menu>
-                <Banner></Banner>
+                <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro} />
+                {/* <Banner></Banner> */}
                 <Header></Header>
-                <Timeline playlists={config.playlists}>
+                <Timeline searchValue={valorDoFiltro} playlists={config.playlists}>
                     {/* Conteudo */}
                 </Timeline>
                 <Favorites favorites={config.favorites}>
@@ -32,27 +34,21 @@ export default HomePage
 
 const StyledBanner = styled.div`
 
-        section {
-            height: 230px;
-            background-image: url("https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80");
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-        }
+        height: 230px;
+        background-color: red;
+        background-image: url(${({ bg }) => bg});
+        /* background-image: url(${config.banner}); */
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
 
     `
 
-function Banner() {    
-
-    return (
-
-        <StyledBanner>
-            <section></section>
-        </StyledBanner>
-
-    )
-
-}
+// function Banner() {
+//     return (
+//         <StyledBanner />
+//     )
+// }
 
 const StyledHeader = styled.div`
 
@@ -75,6 +71,8 @@ function Header() {
 
     return (
         <StyledHeader>
+            <StyledBanner bg={config.banner}/>
+            {/* <StyledBanner /> */}
             <section className="user-info">
                 <img src={`https://github.com/${config.github}.png`} />
                 <div>
@@ -86,7 +84,7 @@ function Header() {
     )
 }
 
-function Timeline(props) {
+function Timeline({searchValue, ...props}) {
     
     const playListNames = Object.keys(props.playlists)
     // Statement
@@ -96,21 +94,25 @@ function Timeline(props) {
         <StyledTimeline>
             {playListNames.map((playListName) => {
                 const videos = props.playlists[playListName];
-                console.log(playListName);
-                console.log(videos);
                 return (
-                    <section>
+                    <section key={playListName}>
                         <h2>{playListName}</h2>
                         <div>
-                            {videos.map((video) => {
-                                return (
-                                    <a href={video.url}>
-                                        <img src={video.thumb} />                        
-                                        <span>
-                                            {video.title}
-                                        </span>
-                                    </a>
-                                )
+                            {videos
+                                .filter((video) => {
+                                    const titleNormalized = video.title.toLowerCase();
+                                    const searchValueNormalized = searchValue.toLowerCase();
+                                    return titleNormalized.includes(searchValueNormalized)
+                                })
+                                .map((video) => {
+                                    return (
+                                        <a key={video.url} href={video.url}>
+                                            <img src={video.thumb} />                        
+                                            <span>
+                                                {video.title}
+                                            </span>
+                                        </a>
+                                    )
                             })}
                         </div>
                     </section>
@@ -153,7 +155,6 @@ const StyledFavors = styled.div`
 function Favorites(props) {    
 
     const favoriteNames = Object.keys(props.favorites)
-    console.log(config.favorites)
 
     return(
         <StyledFavors>            
@@ -163,7 +164,7 @@ function Favorites(props) {
                     favoriteNames.map((favoriteName) => {
                         const favors = props.favorites[favoriteName];
                         return (                        
-                            <section className="favor-info">
+                            <section key={favoriteName} className="favor-info">
                                 <div>
                                     <img src={favors.perfil_image} />
                                 </div>
