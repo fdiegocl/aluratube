@@ -1,15 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
 import config from "../config.json";
 import styled from "styled-components";
 import Menu from "../src/components/Menu";
 import { StyledTimeline } from "../src/components/Timeline";
+import { videoService } from "../src/services/videoService";
 
 function HomePage() {
-    
-    // const estilosDaHomePage = {
-
-    // };
+    const service = videoService();
     const [valorDoFiltro, setValorDoFiltro] = React.useState("");
+    const [playlists, setPlaylists] = React.useState({});
+    // const playlists = {
+    //     "games": [],
+    // };
+    React.useEffect(() => {
+        console.log("useEffect");
+        service
+            .getAllVideos()
+            .then((dados) => {
+                console.log(dados.data);
+                const novasPlaylists = {...playlists};
+                dados.data.forEach((video) => {
+                    if(!novasPlaylists[video.playlist]) novasPlaylists[video.playlist] = [];
+                    novasPlaylists[video.playlist].push(video);
+                })
+                setPlaylists(novasPlaylists);
+            });
+    }, [])
 
     return (
         <>
@@ -22,7 +38,7 @@ function HomePage() {
             {/* <div> */}
                 <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro} />
                 <Header></Header>
-                <Timeline searchValue={valorDoFiltro} playlists={config.playlists}>
+                <Timeline searchValue={valorDoFiltro} playlists={playlists}>
                     {/* Conteudo */}
                 </Timeline>
                 <Favorites favorites={config.favorites}>
